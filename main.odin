@@ -46,7 +46,8 @@ game_speed : f32
 
 
 init :: proc(){
- k2.init(1280, 720, "emi");
+ k2.init(1920, 1080, "emi")
+ k2.set_window_mode(window_mode = k2.Window_Mode.Borderless_Fullscreen)
  camera.zoom = f32(k2.get_screen_width())/1920.0
  tank.texture = k2.load_texture_from_bytes(#load("textures/tankA.png"))
  tank.position = {960, 640}
@@ -78,7 +79,6 @@ step :: proc() -> bool {
    tank.health = 1
    score = 0
    game_speed = 1.0
-   clear(&shots)
    clear(&enemys)
    clear(&enemy_shots)
    lost = false
@@ -145,6 +145,7 @@ step :: proc() -> bool {
   if tank.position.x >= 1920 do tank.position.x = 0
   if tank.position.y < 0 do tank.position.y = 1080
   if tank.position.x < 0 do tank.position.x = 1920
+
   for &shot, i in shots
   {
    speed : f32 = 800 * game_speed
@@ -163,6 +164,7 @@ step :: proc() -> bool {
     if (shot.position.x < enemy.position.x + padd && shot.position.x > enemy.position.x - padd) &&
      (shot.position.y < enemy.position.y + padd && shot.position.y > enemy.position.y - padd)
     {
+     unordered_remove(&shots, i)
      enemy.health -= 1
      if enemy.health == 0 { 
       k2.play_sound(enemy_destroyed_sound)
@@ -170,10 +172,10 @@ step :: proc() -> bool {
       score += 1
       game_speed += 0.01
      }
-     unordered_remove(&shots, i)
+     continue
     }
    }
-   if shot.position.x < 0 || shot.position.y < 0 || shot.position.x >= 1920 || shot.position.y >= 1080 {
+   if shot.position.x < -100 || shot.position.y < -100 || shot.position.x >= 1920+100 || shot.position.y >= 1080+100 {
     unordered_remove(&shots, i)
    }
   }
@@ -222,6 +224,7 @@ step :: proc() -> bool {
   if tank.health <= 0 && lost == false{
    lost = true
    k2.play_sound(lost_sound)
+   clear(&shots)
   }
 
   
